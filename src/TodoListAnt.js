@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import store from './store';  // 直接找index.js文件内容
-import { getInputChangeAction, getAddItemAction, getDeleteItemAction, getTodoList } from './store/actionCreators';
+import { getInputChangeAction, getAddItemAction, getDeleteItemAction, getInitList} from './store/actionCreators';
 import TodoListAntUI from './TodoListAntUI';
 
 // 拆分UI组件TodoListAntUI和容器组件TodoListAnt，其中TodoListAntUI负责render部分，而TodoListAnt负责逻辑实现部分
@@ -37,13 +37,17 @@ class TodoListAnt extends Component {
         // Redux中发送异步请求获取数据
         // axios.get('./list.json').then((res) => {
         //     const action = initListAction(res.data);
+        //     store.dispatch(action);
         // });
         // 如果把异步请求或者过于复杂的逻辑写在组件中实现，组件会过于臃肿。
         // 可使用redux-thunk将请求或复杂逻辑移到action中处理
         // 使用redux-thunk前，需要在store创建时配置
         // 使用redux-thunk把上面的请求独立出去
-        const action = getTodoList(); // 构建一个action--函数
-        store.dispatch(action); // 调用store.dispatch时，action会被自动执行
+        // const action = getTodoList(); // 构建一个action--函数
+        // store.dispatch(action); // 调用store.dispatch时，action会被自动执行
+        // 使用redux-saga替换redux-thunk
+        const action = getInitList();
+        store.dispatch(action); // 1. 当使用redux-saga之后，不仅仅reducer中可以接收到action，在sagas中也可以接收到数据
     }
     
 
