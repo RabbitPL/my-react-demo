@@ -1,87 +1,47 @@
-import React, {Fragment, Component}from 'react';
-import TodoItem from './TodoItem';
-import Test from './Test';
-import './style.css';
+import React, { Component } from 'react';
+import { connect } from 'react-redux'; // 2. 通过connect获取state的内容,不需要再引入store文件
+
 class TodoList extends Component {
-    // 类实例被首先调用
-    constructor(props) {
-        // 调用父类Component方法
-        super(props);
-        // 定义数据，放在状态中
-        this.state = {
-            inputValue: 'hello!!!',
-            list: ['学英语', '学java']
-        }
 
-        // 统一处理bind绑定
-        this.handleInputChange = this.handleInputChange.bind(this);
-        this.handleClick = this.handleClick.bind(this);
-        this.handleItemDelete = this.handleItemDelete.bind(this);
-    }
     render() {
-        console.log('render');
         return (
-            <Fragment>
-                <div>
-                    <label htmlFor="inputValue">输入内容</label>
-                    <input
-                        id="inputValue"
-                        className="input"
-                        onChange={this.handleInputChange}
-                        ref={(input) => {this.input = input}}
-                        value={this.state.inputValue} 
-                    />
-                    <button onClick={this.handleClick}>提交</button>
-                </div>
-                <ul ref={(ul) => {this.ul = ul}}>
-                    { this.getTodoItem() }
-                </ul>
-                <Test content={this.state.inputValue}/> 
-            </Fragment>
-        );
-    }
-
-    // 通过bind改变this指向
-    handleInputChange(evt) {
-        // 想要页面发生变化，则修改数值
-        // 在react中想要改变state，通过setState方法改变数据
-        // const inputValue = evt.target.value;
-        // this.input替换target
-        const inputValue = this.input.value;
-        // 异步修改
-        this.setState(() => ({
-            inputValue
-        }))
-    }
-
-    handleClick() {
-        // 可以同时设置多个state
-        this.setState((prevState) => ({
-            list: [...prevState.list, prevState.inputValue],
-            inputValue: ''
-        }), () => {
-            console.log(this.ul.querySelectorAll('div').length);
-        })
-        // 此时获取到的dom不会按照预期发生变化，因为setState是一个异步函数，并不会立即执行
-        // console.log(this.ul.querySelectorAll('div').length);
-        // 而setState提供了一个回调函数，需要再回调用获取dom元素才是真实发生变化后渲染的dom
-    }
-
-    handleItemDelete(idx) {
-        // state不允许修改任何改变，要把list先copy出来        
-        this.setState((preState) => {
-            const list = [...preState.list];
-            list.splice(idx, 1);
-            return {list};
-        });
-    }
-    
-    getTodoItem() {
-        return this.state.list.map((item, index) => {
-            return (
-            <TodoItem key={index} content={item} index={index} deleteItem={this.handleItemDelete}/>
-            )
-        });
+            <div>
+                <input type="text" value={this.props.inputValue} onChange={this.props.changeInputValue}/>
+                <button onClick={this.props.btnClick}>提交</button>
+                { this.props.list.map((item, index) => (
+                    <li key={index}>{item}</li>
+                ))}
+            </div>
+        )
     }
 }
-export default TodoList;
+// 2. 让TodoList和store做链接connect
+// 链接规则参数1，把store中的state映射到组件，作为组件的props固定写法，接收一个state，返回一个对象
+const mapStateToProps = (state) => {
+    return {
+        inputValue: state.inputValue,
+        list: state.list
+    }
+}
+// 链接规则参数2，如果相对store的数据做修改，可以通过props做修改
+// mapDispatchToProps： store.dispatch改变store的内容，映射到props上
+const mapDispatchToProps = (dispatch) => {
+    return {
+        changeInputValue(e) {
+            const action = {
+                type: 'change_input_value',
+                value: e.target.value
+            }
+            dispatch(action);
+        },
+        btnClick() {
+            const action = {
+                type: 'add_item_list'
+            }
+            dispatch(action);
+        }
+    }
+}
+
+// react-redux的两个API，Provider和connect
+export default connect(mapStateToProps, mapDispatchToProps)(TodoList);
